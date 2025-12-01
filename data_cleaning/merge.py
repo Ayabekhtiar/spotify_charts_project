@@ -2,13 +2,7 @@ import pandas as pd
 
 import os
 
-def merge_data():
-    # Define paths
-    base_dir = os.path.dirname(os.path.dirname(__file__))
-    tracks_path = os.path.join(base_dir, "data", "raw", "tracks.csv")
-    songs_path = os.path.join(base_dir, "data", "processed", "combined_songs.csv")
-    output_path = os.path.join(base_dir, "data", "processed", "songs_with_features.csv")
-
+def merge_data(tracks_path, songs_path, output_path):
     if not os.path.exists(tracks_path) or not os.path.exists(songs_path):
         print("Input files not found.")
         return

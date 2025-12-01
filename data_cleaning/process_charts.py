@@ -1,15 +1,14 @@
 import pandas as pd
 import os
 
-def process_all_charts():
-    data_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "raw")
+def process_all_charts(data_folder):
 
     # Load and combine all CSVs
     dfs = [pd.read_csv(os.path.join(data_folder, f))
            for f in os.listdir(data_folder) if f.endswith(".csv")]
 
     if not dfs:
-        print("No CSV files found in data/raw")
+        print("No CSV files found in", data_folder)
         return
 
     combined_df = pd.concat(dfs, ignore_index=True)
