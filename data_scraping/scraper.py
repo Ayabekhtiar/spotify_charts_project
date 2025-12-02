@@ -26,7 +26,7 @@ END_DATE =  "2020-12-31"
 DATES = generate_week_dates(START_DATE, END_DATE)
 
 BASE_URL = "https://charts.spotify.com/charts/view/regional-global-weekly/"
-DOWNLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "raw")
+DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "data", "bronze", "data")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 DOWNLOAD_TIMEOUT = 30
