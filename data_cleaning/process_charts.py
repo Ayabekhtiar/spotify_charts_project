@@ -1,11 +1,14 @@
 import pandas as pd
 import os
 
-def process_all_charts(data_folder):
-
-    # Load and combine all CSVs
-    dfs = [pd.read_csv(os.path.join(data_folder, f))
-           for f in os.listdir(data_folder) if f.endswith(".csv")]
+def process_all_charts(data_folder, output_path):
+    
+    dfs_names = [f for f in os.listdir(data_folder) if f.endswith(".csv")]
+    dfs = [pd.read_csv(os.path.join(data_folder, f)) for f in dfs_names]
+    
+    # In each csv add a column "week_date" with the name of the csv as value for all its rows (eg. "2016-12-29" for "regional-global-weekly-2016-12-29.csv")
+    for df_name, df in zip(dfs_names, dfs):
+        df["week_date"] = df_name.replace("regional-global-weekly-", "").replace(".csv", "")
 
     if not dfs:
         print("No CSV files found in", data_folder)
@@ -22,7 +25,6 @@ def process_all_charts(data_folder):
 
 
     # Save to CSV
-    output_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "processed", "combined_songs.csv")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     unique_df.to_csv(output_path, index=False)
 

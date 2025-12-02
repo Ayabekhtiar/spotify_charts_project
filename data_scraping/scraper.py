@@ -21,7 +21,7 @@ def generate_week_dates(start_date, end_date):
     return dates
 
 
-START_DATE = "2020-06-11"       # Important: must be a Thursday
+START_DATE = "2016-12-29"       # Important: must be a Thursday
 END_DATE =  "2020-12-31"
 DATES = generate_week_dates(START_DATE, END_DATE)
 
