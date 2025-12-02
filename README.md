@@ -1,6 +1,6 @@
 # Spotify Charts Project
 
-This project scrapes, cleans, and analyzes Spotify Charts data.
+This project scrapes, cleans, and analyzes Spotify Charts data using a medallion architecture (Bronze → Silver → Gold) for data processing and includes machine learning models for stream prediction and classification.
 
 ## Project Structure
 
@@ -8,32 +8,173 @@ This project scrapes, cleans, and analyzes Spotify Charts data.
 .
 ├── .gitignore
 ├── README.md
-├── data_cleaning.ipynb       # Notebook to run data processing and verification
-├── data
-│   ├── raw                   # Raw data (scraped CSVs, tracks.csv)
-│   └── processed             # Processed data (combined_songs.csv, songs_with_features.csv)
-├── data_cleaning             # Module for data processing
-│   ├── process_charts.py     # Combines weekly charts into one file
-│   └── merge.py              # Merges charts with track features
-└── data_scraping             # Module for web scraping
-    └── scraper.py            # Selenium scraper for Spotify Charts
+├── data_cleaning.ipynb          # Main notebook for data processing pipeline
+├── data_visualisation.ipynb      # Notebook for visualization and ML analysis
+├── data/
+│   ├── bronze/                   # Raw data layer (CSV format)
+│   │   ├── data/                 # Weekly chart CSV files
+│   │   ├── tracks.csv            # Track features from Spotify API
+│   │   └── ...                   # Additional enrichment data
+│   ├── silver/                   # Cleaned and merged data (Parquet format)
+│   │   ├── combined_songs.parquet
+│   │   ├── songs_with_features.parquet
+│   │   └── explicit_cache.json   # Cache for explicit content detection
+│   └── gold/                     # Final processed data (Parquet format)
+│       └── songs_with_features.parquet
+├── data_scraping/                # Web scraping module
+│   └── scraper.py               # Selenium scraper for Spotify Charts
+├── data_cleaning/                # Data processing module
+│   ├── __init__.py
+│   ├── process_charts.py        # Combines weekly charts into one file
+│   ├── merge.py                 # Merges charts with track features
+│   ├── clean_songs.py           # Data cleaning and missing value handling
+│   ├── artist_mapping.py        # Artist ID mapping and normalization
+│   └── explicit_enrichment.py   # Explicit content detection via Gemini API
+├── data_visualisation/           # Visualization and ML module
+│   ├── __init__.py
+│   ├── data_loading.py          # Load gold data for analysis
+│   ├── track_analysis.py        # Track appearance and lifecycle analysis
+│   ├── plotting.py              # Visualization functions
+│   ├── analysis.py              # Statistical analysis and insights
+│   ├── ml_features.py           # Feature engineering for ML
+│   └── ml_models.py              # ML models for stream prediction
+└── charts/                       # Additional analysis modules
+    ├── clustering.py
+    └── pca.py
 ```
+
+## Data Architecture
+
+The project follows a **medallion architecture** with three data layers:
+
+- **Bronze Layer** (`data/bronze/`): Raw, unprocessed data
+  - Weekly chart CSV files from scraping
+  - Track features CSV from Spotify API
+  - Format: CSV
+
+- **Silver Layer** (`data/silver/`): Cleaned and merged data
+  - Combined weekly charts
+  - Merged with track features
+  - Format: Parquet (for better performance and compression)
+
+- **Gold Layer** (`data/gold/`): Final processed data ready for analysis
+  - Fully cleaned and enriched data
+  - Missing values handled
+  - Format: Parquet
 
 ## Setup
 
-1.  Ensure you have the required dependencies installed (pandas, selenium, etc.).
-2.  Place `tracks.csv` in `data/raw` if it's not already there.
+1. **Install dependencies**:
+   ```bash
+   pip install pandas pyarrow selenium google-genai scikit-learn matplotlib seaborn
+   ```
+
+2. **Configure API keys** (if using explicit content enrichment):
+   - Set up Google Gemini API key for explicit content detection
+   - See `data_cleaning/explicit_enrichment.py` for configuration
+
+3. **Data preparation**:
+   - Place `tracks.csv` in `data/bronze/` if not already there
+   - Weekly chart files should be in `data/bronze/data/`
 
 ## Usage
 
-### Scraping Data
+### 1. Scraping Data
+
 Run the scraper to download weekly charts:
 ```bash
 python data_scraping/scraper.py
 ```
 
-### Cleaning and Merging Data
+This will download weekly chart CSV files to `data/bronze/data/`.
+
+### 2. Data Cleaning Pipeline
+
 Open `data_cleaning.ipynb` and run the cells to:
-1.  Process the downloaded charts.
-2.  Merge with track features.
-3.  Verify data integrity.
+
+1. **Process weekly charts** (`process_all_charts`):
+   - Combines all weekly chart CSV files
+   - Removes duplicates and unnecessary columns
+   - Saves to `data/silver/combined_songs.parquet`
+
+2. **Merge with track features** (`merge_data`):
+   - Merges chart data with track features from `tracks.csv`
+   - Saves to `data/silver/songs_with_features.parquet`
+
+3. **Data cleaning**:
+   - Handles missing values using proxy dictionaries
+   - Normalizes artist IDs
+   - Enriches explicit content information (optional, uses Gemini API)
+
+4. **Final processing**:
+   - Creates gold layer data
+   - Saves to `data/gold/songs_with_features.parquet`
+
+### 3. Visualization and Analysis
+
+Open `data_visualisation.ipynb` to:
+
+1. **Load data**:
+   ```python
+   from data_visualisation import load_data
+   songs = load_data()
+   ```
+
+2. **Track analysis**:
+   - Track appearances and rankings
+   - Track lifecycle analysis
+   - Time series trends
+
+3. **Visualizations**:
+   - Track rankings and trends
+   - Audio feature distributions
+   - Correlation heatmaps
+   - Streams vs. features analysis
+
+4. **Machine Learning**:
+   - Feature engineering
+   - Stream prediction models (regression)
+   - Classification models (top chart prediction)
+   - Model comparison and evaluation
+
+## Module Overview
+
+### `data_cleaning/`
+
+- **`process_charts.py`**: Combines weekly chart files into a single dataset
+- **`merge.py`**: Merges chart data with track audio features
+- **`clean_songs.py`**: Handles missing values, data cleaning, and Parquet conversion utilities
+- **`artist_mapping.py`**: Maps artist names to unique IDs for normalization
+- **`explicit_enrichment.py`**: Uses Gemini API to detect explicit content in tracks
+
+### `data_visualisation/`
+
+- **`data_loading.py`**: Loads and preprocesses gold layer data
+- **`track_analysis.py`**: Analyzes track appearances and calculates lifecycle metrics
+- **`plotting.py`**: Creates various visualizations (rankings, trends, distributions, etc.)
+- **`analysis.py`**: Statistical analysis and correlation calculations
+- **`ml_features.py`**: Feature engineering for machine learning models
+- **`ml_models.py`**: Trains and evaluates regression and classification models
+
+## Data Formats
+
+- **Bronze layer**: CSV files (raw data)
+- **Silver/Gold layers**: Parquet files (for better performance, compression, and type preservation)
+- The code includes migration helpers to automatically convert existing CSV files to Parquet when needed
+
+## Features
+
+- **Medallion Architecture**: Bronze → Silver → Gold data pipeline
+- **Data Cleaning**: Comprehensive missing value handling and data normalization
+- **Artist Mapping**: Automatic artist ID generation and normalization
+- **Explicit Content Detection**: Integration with Google Gemini API
+- **Visualization**: Comprehensive plotting and analysis tools
+- **Machine Learning**: Stream prediction and classification models
+- **Type Safety**: Parquet format preserves data types and improves performance
+
+## Notes
+
+- The project automatically handles CSV to Parquet migration for existing data files
+- Explicit content enrichment requires a Google Gemini API key
+- All silver and gold layer files use Parquet format for optimal performance
+- Bronze layer files remain in CSV format as they are raw input data

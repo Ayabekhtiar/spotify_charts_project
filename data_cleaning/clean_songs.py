@@ -261,3 +261,25 @@ def fill_missing_from_dfs(
     return songs
 
 
+#
+# Parquet utility functions
+#
+
+def prepare_df_for_parquet(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Prepare a dataframe for saving to parquet by converting problematic columns.
+    Converts release_date to string to avoid ArrowTypeError with mixed types.
+    
+    Args:
+        df: DataFrame to prepare
+        
+    Returns:
+        DataFrame with columns converted for parquet compatibility
+    """
+    df_parquet = df.copy()
+    if 'release_date' in df_parquet.columns:
+        # Convert to datetime first, then to string to ensure consistency
+        df_parquet['release_date'] = pd.to_datetime(df_parquet['release_date'], errors='coerce').astype(str)
+    return df_parquet
+
+

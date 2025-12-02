@@ -26,9 +26,9 @@ def process_all_charts(data_folder, output_path):
     unique_df = unique_df.rename(columns={"uri": "track_id"})
 
 
-    # Save to CSV
+    # Save to Parquet
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    unique_df.to_csv(output_path, index=False)
+    unique_df.to_parquet(output_path, index=False)
 
     print(f"✓ File saved as: {output_path}")
 

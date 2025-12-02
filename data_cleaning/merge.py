@@ -8,8 +8,8 @@ def merge_data(tracks_path, songs_path, output_path):
         return
 
     # Load your files
-    tracks = pd.read_csv(tracks_path)
-    songs = pd.read_csv(songs_path)
+    tracks = pd.read_csv(tracks_path)  # tracks_path is from bronze, stays CSV
+    songs = pd.read_parquet(songs_path)  # songs_path is from silver, use parquet
     
     #Ensure there will not be any duplicates in tracks "id" dataframe
     tracks = tracks.drop_duplicates(subset=["id"])
@@ -29,7 +29,7 @@ def merge_data(tracks_path, songs_path, output_path):
     merged = songs.merge(tracks, on="track_id", how="left")
 
     # Save
-    merged.to_csv(output_path, index=False)
+    merged.to_parquet(output_path, index=False)
     print(f"✓ Merged data saved to: {output_path}")
 
 if __name__ == "__main__":
