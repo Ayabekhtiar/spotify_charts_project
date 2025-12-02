@@ -13,9 +13,17 @@ def merge_data(tracks_path, songs_path, output_path):
     
     #Ensure there will not be any duplicates in tracks "id" dataframe
     tracks = tracks.drop_duplicates(subset=["id"])
-
+    
+    # remove from tracks the columns that are already in songs except ""
+    for c in songs.columns:
+        if c in tracks.columns and c not in ["id", "track_id"]:
+            tracks.drop(columns=[c], inplace=True)
+    
     # Rename if necessary so both files have the same ID column name
     tracks.rename(columns={"id": "track_id"}, inplace=True)
+    
+    
+
 
     # Merge on the track ID
     merged = songs.merge(tracks, on="track_id", how="left")
