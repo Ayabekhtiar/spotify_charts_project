@@ -25,15 +25,21 @@ START_DATE = "2016-12-29"       # Important: must be a Thursday
 END_DATE =  "2020-12-31"
 DATES = generate_week_dates(START_DATE, END_DATE)
 
+# Go one level up from data_scraping/
 BASE_URL = "https://charts.spotify.com/charts/view/regional-global-weekly/"
-DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "data", "bronze", "data")
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "data", "bronze", "weekly_data")
+
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+
+
 
 DOWNLOAD_TIMEOUT = 30
 BUTTON_WAIT_TIME = 10
 RETRIES = 3
 
-# Random delay settings
+# Random delay settings to avoid being blocked by the website
 def human_delay(a=0.7, b=2.3):
     time.sleep(random.uniform(a, b))
 
@@ -131,7 +137,7 @@ if __name__ == "__main__":
 
     print("\n🔐 Opening first page to allow login...")
     driver.get(BASE_URL + DATES[0])
-    input("⏸ Please login & accept cookies, then press ENTER once. This step won't repeat. ")
+    input("⏸ Please login, then press ENTER once. This step won't repeat. ")
 
     human_delay(2, 4)
 
@@ -139,6 +145,7 @@ if __name__ == "__main__":
         download_for_date(driver, date)
 
     print("\n🎉 Finished!")
-    print("📦 Files:", os.listdir(DOWNLOAD_DIR))
 
     driver.quit()
+
+
