@@ -29,7 +29,7 @@ DATES = generate_week_dates(START_DATE, END_DATE)
 BASE_URL = "https://charts.spotify.com/charts/view/regional-global-weekly/"
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DOWNLOAD_DIR = os.path.join(BASE_DIR, "data", "bronze", "weekly_data")
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "data", "bronze", "data")
 
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
