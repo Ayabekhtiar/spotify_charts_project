@@ -301,7 +301,7 @@ def plot_longevity_distribution(longevity_data):
     return skewness
 
 
-def prepare_longevity_groups(longevity_data, short_threshold=4, long_threshold=15):
+def prepare_longevity_groups(longevity_data, short_threshold=8, long_threshold=15):
     """
     Prepare groups for comparing short-lived vs long-lasting hits.
     

@@ -492,11 +492,12 @@ def plot_feature_importance(models_dict, available_features, top_n=15):
 
 def train_longevity_classification_models(X_train, y_train, X_test, y_test, available_features):
     """
-    Train classification models for longevity prediction (multi-class: Short/Medium/Long).
+    Train classification models for longevity prediction (binary: Short/Long).
     
     Args:
         X_train: Training feature matrix
-        y_train: Training target vector (0=Short, 1=Medium, 2=Long)
+        y_train: Training target vector (0=Short, 1=Long), where
+                 Short corresponds to ≤8 weeks on chart and Long to ≥9 weeks
         X_test: Test feature matrix
         y_test: Test target vector
         available_features: List of feature names
@@ -513,9 +514,9 @@ def train_longevity_classification_models(X_train, y_train, X_test, y_test, avai
     X_test_scaled = scaler_clf.transform(X_test)
     
     print("=" * 60)
-    print("LONGEVITY CLASSIFICATION MODELS (Multi-class)")
+    print("LONGEVITY CLASSIFICATION MODELS (Binary)")
     print("=" * 60)
-    print(f"Classes: 0=Short (≤4 weeks), 1=Medium (5-14 weeks), 2=Long (≥15 weeks)")
+    print(f"Classes: 0=Short (≤8 weeks), 1=Long (≥9 weeks)")
     print(f"Training samples: {len(X_train)}, Test samples: {len(X_test)}")
     
     models = {}
@@ -544,7 +545,7 @@ def train_longevity_classification_models(X_train, y_train, X_test, y_test, avai
     predictions_proba['lr'] = y_pred_proba_lr_clf
     results['lr'] = {'acc': lr_clf_acc, 'prec': lr_clf_prec, 'rec': lr_clf_rec, 'f1': lr_clf_f1, 'auc': lr_clf_auc}
     
-    print(f"\n1. Logistic Regression (Multi-class):")
+    print(f"\n1. Logistic Regression (Binary):")
     print(f"   Accuracy: {lr_clf_acc:.4f}")
     print(f"   Precision (macro): {lr_clf_prec:.4f}")
     print(f"   Recall (macro): {lr_clf_rec:.4f}")
@@ -571,7 +572,7 @@ def train_longevity_classification_models(X_train, y_train, X_test, y_test, avai
     predictions_proba['rf'] = y_pred_proba_rf_clf
     results['rf'] = {'acc': rf_clf_acc, 'prec': rf_clf_prec, 'rec': rf_clf_rec, 'f1': rf_clf_f1, 'auc': rf_clf_auc}
     
-    print(f"\n2. Random Forest Classifier (Multi-class):")
+    print(f"\n2. Random Forest Classifier (Binary):")
     print(f"   Accuracy: {rf_clf_acc:.4f}")
     print(f"   Precision (macro): {rf_clf_prec:.4f}")
     print(f"   Recall (macro): {rf_clf_rec:.4f}")
@@ -600,7 +601,7 @@ def train_longevity_classification_models(X_train, y_train, X_test, y_test, avai
         predictions_proba['xgb'] = y_pred_proba_xgb_clf
         results['xgb'] = {'acc': xgb_clf_acc, 'prec': xgb_clf_prec, 'rec': xgb_clf_rec, 'f1': xgb_clf_f1, 'auc': xgb_clf_auc}
         
-        print(f"\n3. XGBoost Classifier (Multi-class):")
+        print(f"\n3. XGBoost Classifier (Binary):")
         print(f"   Accuracy: {xgb_clf_acc:.4f}")
         print(f"   Precision (macro): {xgb_clf_prec:.4f}")
         print(f"   Recall (macro): {xgb_clf_rec:.4f}")
@@ -620,7 +621,7 @@ def train_longevity_classification_models(X_train, y_train, X_test, y_test, avai
         print(f"Detailed Classification Report ({best_model_name.upper()} - Best Model):")
         print(f"{'='*60}")
         print(classification_report(y_test, predictions[best_model_name], 
-                                   target_names=['Short', 'Medium', 'Long'], zero_division=0))
+                                   target_names=['Short', 'Long'], zero_division=0))
     
     return {
         'models': models,
@@ -629,6 +630,6 @@ def train_longevity_classification_models(X_train, y_train, X_test, y_test, avai
         'results': results,
         'xgboost_available': xgboost_available,
         'scaler': scaler_clf,
-        'class_names': ['Short', 'Medium', 'Long']
+        'class_names': ['Short', 'Long']
     }
 

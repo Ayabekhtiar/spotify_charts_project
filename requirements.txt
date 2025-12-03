@@ -1,0 +1,11 @@
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+tqdm
+selenium
+google-api-core
+google-genai
+xgboost
+

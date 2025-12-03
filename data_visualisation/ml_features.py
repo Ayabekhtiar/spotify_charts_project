@@ -134,7 +134,8 @@ def prepare_longevity_features(songs, track_appearances):
     
     Returns:
         X: Feature matrix (n_samples, n_features)
-        y: Target vector with longevity categories (0=Short, 1=Medium, 2=Long)
+        y: Target vector with longevity categories (0=Short, 1=Long),
+           where Short corresponds to ≤8 weeks on chart and Long to ≥9 weeks
         feature_names: List of feature names
         longevity_df: DataFrame with track-level data and longevity categories
     """
@@ -143,12 +144,10 @@ def prepare_longevity_features(songs, track_appearances):
     longevity_df = longevity_df.rename(columns={'appearance_count': 'weeks_on_chart'})
     
     # Create longevity categories
-    # Short: ≤4 weeks, Medium: 5-14 weeks, Long: ≥15 weeks
+    # Short: ≤8 weeks, Long: ≥9 weeks
     def categorize_longevity(weeks):
-        if weeks <= 4:
+        if weeks <= 8:
             return 'Short'
-        elif weeks <= 14:
-            return 'Medium'
         else:
             return 'Long'
     
@@ -225,7 +224,7 @@ def prepare_longevity_features(songs, track_appearances):
         longevity_df = longevity_df.loc[X.index]
     
     # Prepare target vector y (convert categories to numeric)
-    category_map = {'Short': 0, 'Medium': 1, 'Long': 2}
+    category_map = {'Short': 0, 'Long': 1}
     y = longevity_df['longevity_category'].map(category_map).values
     
     # Remove rows where y is NaN (shouldn't happen, but safety check)
