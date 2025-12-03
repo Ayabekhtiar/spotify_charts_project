@@ -6,3 +6,5 @@
 !data/bronze/*.zip
 *.json
 !data/silver/explicit_cache.json
+
+charts/
