@@ -24,6 +24,21 @@ from .plotting import (
     plot_longevity_ml_results,
 )
 from .analysis import get_stream_correlations, print_summary_insights
+from .ml_features import (
+    engineer_ml_features,
+    split_train_test, 
+    prepare_longevity_features
+)
+
+from .ml_models import ( 
+    plot_prediction_results, 
+    prepare_classification_data, 
+    train_classification_models, 
+    plot_classification_results,
+    compare_models, 
+    plot_feature_importance,
+    train_longevity_classification_models
+)
 
 __all__ = [
     # Data loading
