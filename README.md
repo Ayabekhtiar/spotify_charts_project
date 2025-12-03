@@ -35,10 +35,10 @@ This project scrapes, cleans, and analyzes Spotify Charts data using a medallion
 │   ├── data_loading.py          # Load gold data for analysis
 │   ├── track_analysis.py        # Track appearance and lifecycle analysis
 │   ├── plotting.py              # Visualization functions
+│   ├── ml_features.py           # Random forest features
+│   ├── ml_models.py             # Random forest construction functions
 │   ├── analysis.py              # Statistical analysis and insights
-└── charts/                       # Additional analysis modules
-    ├── clustering.py
-    └── pca.py
+└
 ```
 
 ## Data Architecture
