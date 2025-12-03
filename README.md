@@ -2,6 +2,8 @@
 
 This project scrapes, cleans, and analyzes Spotify Charts data using a [medallion architecture](https://www.databricks.com/glossary/medallion-architecture) (Bronze → Silver → Gold) for data processing 
 
+Please find the project `Report` in the file `Report.pdf`
+
 ## Project Structure
 
 ```
