@@ -1,6 +1,6 @@
 # Spotify Charts Project
 
-This project scrapes, cleans, and analyzes Spotify Charts data using a medallion architecture (Bronze → Silver → Gold) for data processing
+This project scrapes, cleans, and analyzes Spotify Charts data using a [medallion architecture](https://www.databricks.com/glossary/medallion-architecture) (Bronze → Silver → Gold) for data processing 
 
 ## Project Structure
 
@@ -8,6 +8,7 @@ This project scrapes, cleans, and analyzes Spotify Charts data using a medallion
 .
 ├── .gitignore
 ├── README.md
+├── requirements.txt
 ├── data_cleaning.ipynb          # Main notebook for data cleaning
 ├── data_visualisation.ipynb      # Notebook for visualization and analysis
 ├── data/
@@ -41,6 +42,21 @@ This project scrapes, cleans, and analyzes Spotify Charts data using a medallion
 └
 ```
 
+## Setup
+
+1. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+   
+2. **Data preparation**:
+   - Open every `.zip` files in the `data/bronze` directory.
+   - Weekly chart files should be in `data/bronze/data/`
+   - 
+3. **(Optional) Configure API keys** (if using explicit content enrichment):
+   - Set up Google Gemini API key for explicit content detection
+   - See `data_cleaning/explicit_enrichment.py` for configuration
+
 ## Data Architecture
 
 The project follows a **medallion architecture** with three data layers:
@@ -60,24 +76,9 @@ The project follows a **medallion architecture** with three data layers:
   - Missing values handled
   - Format: Parquet
 
-## Setup
-
-1. **Install dependencies**:
-   ```bash
-   pip install pandas pyarrow selenium google-genai scikit-learn matplotlib seaborn
-   ```
-
-2. **Configure API keys** (if using explicit content enrichment):
-   - Set up Google Gemini API key for explicit content detection
-   - See `data_cleaning/explicit_enrichment.py` for configuration
-
-3. **Data preparation**:
-   - Place `tracks.csv` in `data/bronze/` if not already there
-   - Weekly chart files should be in `data/bronze/data/`
-
 ## Usage
 
-### 1. Scraping Data
+### 1. (Optional) Scraping Data
 
 Run the scraper to download weekly charts:
 ```bash
@@ -86,7 +87,7 @@ python data_scraping/scraper.py
 
 This will download weekly chart CSV files to `data/bronze/data/`.
 
-### 2. Data Cleaning Pipeline
+### 2. (Pre-ran) Data Cleaning Pipeline
 
 Open `data_cleaning.ipynb` and run the cells to:
 
