@@ -9,7 +9,8 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (
     mean_squared_error, mean_absolute_error, r2_score,
-    accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+    accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix,
+    classification_report
 )
 
 try:
@@ -487,4 +488,147 @@ def plot_feature_importance(models_dict, available_features, top_n=15):
     
     plt.tight_layout()
     plt.show()
+
+
+def train_longevity_classification_models(X_train, y_train, X_test, y_test, available_features):
+    """
+    Train classification models for longevity prediction (multi-class: Short/Medium/Long).
+    
+    Args:
+        X_train: Training feature matrix
+        y_train: Training target vector (0=Short, 1=Medium, 2=Long)
+        X_test: Test feature matrix
+        y_test: Test target vector
+        available_features: List of feature names
+    
+    Returns:
+        Dictionary with models, predictions, probabilities, results, and scaler
+    """
+    # Check XGBoost availability
+    xgboost_available = XGBOOST_AVAILABLE
+    
+    # Scale features for logistic regression
+    scaler_clf = StandardScaler()
+    X_train_scaled = scaler_clf.fit_transform(X_train)
+    X_test_scaled = scaler_clf.transform(X_test)
+    
+    print("=" * 60)
+    print("LONGEVITY CLASSIFICATION MODELS (Multi-class)")
+    print("=" * 60)
+    print(f"Classes: 0=Short (≤4 weeks), 1=Medium (5-14 weeks), 2=Long (≥15 weeks)")
+    print(f"Training samples: {len(X_train)}, Test samples: {len(X_test)}")
+    
+    models = {}
+    predictions = {}
+    predictions_proba = {}
+    results = {}
+    
+    # Model 1: Logistic Regression (multi-class)
+    lr_clf = LogisticRegression(random_state=42, max_iter=1000, n_jobs=-1, multi_class='ovr')
+    lr_clf.fit(X_train_scaled, y_train)
+    y_pred_lr_clf = lr_clf.predict(X_test_scaled)
+    y_pred_proba_lr_clf = lr_clf.predict_proba(X_test_scaled)
+    
+    lr_clf_acc = accuracy_score(y_test, y_pred_lr_clf)
+    lr_clf_prec = precision_score(y_test, y_pred_lr_clf, average='macro', zero_division=0)
+    lr_clf_rec = recall_score(y_test, y_pred_lr_clf, average='macro', zero_division=0)
+    lr_clf_f1 = f1_score(y_test, y_pred_lr_clf, average='macro', zero_division=0)
+    # ROC-AUC for multi-class (one-vs-rest)
+    try:
+        lr_clf_auc = roc_auc_score(y_test, y_pred_proba_lr_clf, multi_class='ovr', average='macro')
+    except:
+        lr_clf_auc = 0.0
+    
+    models['lr'] = lr_clf
+    predictions['lr'] = y_pred_lr_clf
+    predictions_proba['lr'] = y_pred_proba_lr_clf
+    results['lr'] = {'acc': lr_clf_acc, 'prec': lr_clf_prec, 'rec': lr_clf_rec, 'f1': lr_clf_f1, 'auc': lr_clf_auc}
+    
+    print(f"\n1. Logistic Regression (Multi-class):")
+    print(f"   Accuracy: {lr_clf_acc:.4f}")
+    print(f"   Precision (macro): {lr_clf_prec:.4f}")
+    print(f"   Recall (macro): {lr_clf_rec:.4f}")
+    print(f"   F1-Score (macro): {lr_clf_f1:.4f}")
+    print(f"   ROC-AUC (macro): {lr_clf_auc:.4f}")
+    
+    # Model 2: Random Forest (multi-class)
+    rf_clf = RandomForestClassifier(n_estimators=100, max_depth=15, random_state=42, n_jobs=-1)
+    rf_clf.fit(X_train, y_train)
+    y_pred_rf_clf = rf_clf.predict(X_test)
+    y_pred_proba_rf_clf = rf_clf.predict_proba(X_test)
+    
+    rf_clf_acc = accuracy_score(y_test, y_pred_rf_clf)
+    rf_clf_prec = precision_score(y_test, y_pred_rf_clf, average='macro', zero_division=0)
+    rf_clf_rec = recall_score(y_test, y_pred_rf_clf, average='macro', zero_division=0)
+    rf_clf_f1 = f1_score(y_test, y_pred_rf_clf, average='macro', zero_division=0)
+    try:
+        rf_clf_auc = roc_auc_score(y_test, y_pred_proba_rf_clf, multi_class='ovr', average='macro')
+    except:
+        rf_clf_auc = 0.0
+    
+    models['rf'] = rf_clf
+    predictions['rf'] = y_pred_rf_clf
+    predictions_proba['rf'] = y_pred_proba_rf_clf
+    results['rf'] = {'acc': rf_clf_acc, 'prec': rf_clf_prec, 'rec': rf_clf_rec, 'f1': rf_clf_f1, 'auc': rf_clf_auc}
+    
+    print(f"\n2. Random Forest Classifier (Multi-class):")
+    print(f"   Accuracy: {rf_clf_acc:.4f}")
+    print(f"   Precision (macro): {rf_clf_prec:.4f}")
+    print(f"   Recall (macro): {rf_clf_rec:.4f}")
+    print(f"   F1-Score (macro): {rf_clf_f1:.4f}")
+    print(f"   ROC-AUC (macro): {rf_clf_auc:.4f}")
+    
+    # Model 3: XGBoost (if available)
+    if xgboost_available:
+        xgb_clf = xgb.XGBClassifier(n_estimators=100, max_depth=10, learning_rate=0.1, 
+                                    random_state=42, n_jobs=-1, objective='multi:softprob')
+        xgb_clf.fit(X_train, y_train)
+        y_pred_xgb_clf = xgb_clf.predict(X_test)
+        y_pred_proba_xgb_clf = xgb_clf.predict_proba(X_test)
+        
+        xgb_clf_acc = accuracy_score(y_test, y_pred_xgb_clf)
+        xgb_clf_prec = precision_score(y_test, y_pred_xgb_clf, average='macro', zero_division=0)
+        xgb_clf_rec = recall_score(y_test, y_pred_xgb_clf, average='macro', zero_division=0)
+        xgb_clf_f1 = f1_score(y_test, y_pred_xgb_clf, average='macro', zero_division=0)
+        try:
+            xgb_clf_auc = roc_auc_score(y_test, y_pred_proba_xgb_clf, multi_class='ovr', average='macro')
+        except:
+            xgb_clf_auc = 0.0
+        
+        models['xgb'] = xgb_clf
+        predictions['xgb'] = y_pred_xgb_clf
+        predictions_proba['xgb'] = y_pred_proba_xgb_clf
+        results['xgb'] = {'acc': xgb_clf_acc, 'prec': xgb_clf_prec, 'rec': xgb_clf_rec, 'f1': xgb_clf_f1, 'auc': xgb_clf_auc}
+        
+        print(f"\n3. XGBoost Classifier (Multi-class):")
+        print(f"   Accuracy: {xgb_clf_acc:.4f}")
+        print(f"   Precision (macro): {xgb_clf_prec:.4f}")
+        print(f"   Recall (macro): {xgb_clf_rec:.4f}")
+        print(f"   F1-Score (macro): {xgb_clf_f1:.4f}")
+        print(f"   ROC-AUC (macro): {xgb_clf_auc:.4f}")
+    else:
+        models['xgb'] = None
+        predictions['xgb'] = None
+        predictions_proba['xgb'] = None
+        results['xgb'] = None
+        print("\n3. XGBoost: Not available (install with: pip install xgboost)")
+    
+    # Print detailed classification report for best model
+    best_model_name = max(results.keys(), key=lambda k: results[k]['acc'] if results[k] else 0)
+    if results[best_model_name]:
+        print(f"\n{'='*60}")
+        print(f"Detailed Classification Report ({best_model_name.upper()} - Best Model):")
+        print(f"{'='*60}")
+        print(classification_report(y_test, predictions[best_model_name], 
+                                   target_names=['Short', 'Medium', 'Long'], zero_division=0))
+    
+    return {
+        'models': models,
+        'predictions': predictions,
+        'predictions_proba': predictions_proba,
+        'results': results,
+        'xgboost_available': xgboost_available,
+        'scaler': scaler_clf,
+        'class_names': ['Short', 'Medium', 'Long']
+    }
 

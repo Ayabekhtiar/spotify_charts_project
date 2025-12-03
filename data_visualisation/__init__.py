@@ -13,9 +13,18 @@ from .plotting import (
     plot_correlation_heatmap,
     plot_roc_curves,
     plot_best_confusion_matrix,
+    prepare_longevity_data,
+    plot_longevity_distribution,
+    prepare_longevity_groups,
+    plot_longevity_feature_comparison,
+    plot_longevity_correlations,
+    plot_longevity_scatter_plots,
+    plot_longevity_clustering,
+    plot_longevity_curves,
+    plot_longevity_ml_results,
 )
 from .analysis import get_stream_correlations, print_summary_insights
-from .ml_features import engineer_ml_features, split_train_test
+from .ml_features import engineer_ml_features, split_train_test, prepare_longevity_features
 from .ml_models import (
     train_stream_prediction_models,
     plot_prediction_results,
@@ -24,6 +33,7 @@ from .ml_models import (
     plot_classification_results,
     compare_models,
     plot_feature_importance,
+    train_longevity_classification_models,
 )
 
 __all__ = [
@@ -44,12 +54,23 @@ __all__ = [
     'plot_correlation_heatmap',
     'plot_roc_curves',
     'plot_best_confusion_matrix',
+    # Longevity plotting
+    'prepare_longevity_data',
+    'plot_longevity_distribution',
+    'prepare_longevity_groups',
+    'plot_longevity_feature_comparison',
+    'plot_longevity_correlations',
+    'plot_longevity_scatter_plots',
+    'plot_longevity_clustering',
+    'plot_longevity_curves',
+    'plot_longevity_ml_results',
     # Analysis
     'get_stream_correlations',
     'print_summary_insights',
     # ML Features
     'engineer_ml_features',
     'split_train_test',
+    'prepare_longevity_features',
     # ML Models
     'train_stream_prediction_models',
     'plot_prediction_results',
@@ -58,5 +79,6 @@ __all__ = [
     'plot_classification_results',
     'compare_models',
     'plot_feature_importance',
+    'train_longevity_classification_models',
 ]
 

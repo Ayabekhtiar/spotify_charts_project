@@ -123,3 +123,123 @@ def split_train_test(ml_data, test_size=0.2, time_based=True):
         train_data, test_data = train_test_split(ml_data, test_size=test_size, random_state=42)
         return train_data, test_data, None, None
 
+
+def prepare_longevity_features(songs, track_appearances):
+    """
+    Prepare features for longevity prediction using only non-temporal characteristics.
+    
+    Args:
+        songs: DataFrame with track-week level data
+        track_appearances: DataFrame with track-level appearance statistics (from get_track_appearances)
+    
+    Returns:
+        X: Feature matrix (n_samples, n_features)
+        y: Target vector with longevity categories (0=Short, 1=Medium, 2=Long)
+        feature_names: List of feature names
+        longevity_df: DataFrame with track-level data and longevity categories
+    """
+    # Merge track_appearances to get weeks_on_chart (appearance_count)
+    longevity_df = track_appearances[['track_id', 'appearance_count']].copy()
+    longevity_df = longevity_df.rename(columns={'appearance_count': 'weeks_on_chart'})
+    
+    # Create longevity categories
+    # Short: ≤4 weeks, Medium: 5-14 weeks, Long: ≥15 weeks
+    def categorize_longevity(weeks):
+        if weeks <= 4:
+            return 'Short'
+        elif weeks <= 14:
+            return 'Medium'
+        else:
+            return 'Long'
+    
+    longevity_df['longevity_category'] = longevity_df['weeks_on_chart'].apply(categorize_longevity)
+    
+    # Get track-level features (one row per track)
+    # Use first appearance or mean if multiple values exist
+    track_features = songs.groupby('track_id').agg({
+        # Audio features - use mean if multiple values
+        'danceability': 'mean',
+        'energy': 'mean',
+        'acousticness': 'mean',
+        'instrumentalness': 'mean',
+        'valence': 'mean',
+        'speechiness': 'mean',
+        'tempo': 'mean',
+        # Metadata - use first or mode
+        'duration_ms': 'first',
+        'explicit': 'first',
+        # Artist info - use first
+        'id_artists': 'first',
+    }).reset_index()
+    
+    # Merge with longevity categories
+    longevity_df = longevity_df.merge(track_features, on='track_id', how='inner')
+    
+    # Extract artist count from id_artists
+    def count_artists(id_artists):
+        """Count number of artists from id_artists column."""
+        if pd.isna(id_artists):
+            return 1  # Default to 1 if missing
+        try:
+            # Handle if it's a string representation of a list
+            if isinstance(id_artists, str):
+                # Try to evaluate as Python literal
+                import ast
+                try:
+                    parsed = ast.literal_eval(id_artists)
+                    if isinstance(parsed, (list, tuple)):
+                        return len(parsed)
+                    else:
+                        return 1
+                except:
+                    # If parsing fails, treat as single artist
+                    return 1
+            elif isinstance(id_artists, (list, tuple)):
+                return len(id_artists)
+            else:
+                return 1
+        except:
+            return 1
+    
+    longevity_df['num_artists'] = longevity_df['id_artists'].apply(count_artists)
+    
+    # Select features for ML (non-temporal only)
+    audio_features = ['danceability', 'energy', 'acousticness', 'instrumentalness', 
+                     'valence', 'speechiness', 'tempo']
+    metadata_features = ['duration_ms', 'explicit']
+    artist_features = ['num_artists']
+    
+    all_feature_cols = audio_features + metadata_features + artist_features
+    
+    # Filter to only include columns that exist
+    available_features = [col for col in all_feature_cols if col in longevity_df.columns]
+    
+    # Prepare feature matrix X
+    X = longevity_df[available_features].copy()
+    
+    # Handle missing values - drop rows with any missing values
+    missing_mask = X.isna().any(axis=1)
+    if missing_mask.sum() > 0:
+        print(f"Dropping {missing_mask.sum()} rows with missing values")
+        X = X.dropna()
+        longevity_df = longevity_df.loc[X.index]
+    
+    # Prepare target vector y (convert categories to numeric)
+    category_map = {'Short': 0, 'Medium': 1, 'Long': 2}
+    y = longevity_df['longevity_category'].map(category_map).values
+    
+    # Remove rows where y is NaN (shouldn't happen, but safety check)
+    valid_mask = ~pd.isna(y)
+    X = X.loc[valid_mask]
+    y = y[valid_mask]
+    longevity_df = longevity_df.loc[valid_mask]
+    
+    print(f"\nLongevity Prediction Data Preparation:")
+    print(f"Total tracks: {len(X)}")
+    print(f"Features: {available_features}")
+    print(f"\nLongevity category distribution:")
+    print(longevity_df['longevity_category'].value_counts().sort_index())
+    print(f"\nFeature matrix shape: {X.shape}")
+    
+    return X.values, y, available_features, longevity_df
+
